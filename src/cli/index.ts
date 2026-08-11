@@ -87,6 +87,12 @@ async function main(): Promise<void> {
       console.log(JSON.stringify(config, null, 2));
       break;
     }
+    case 'serve': {
+      const { startServer } = await import('../server/index.js');
+      const port = parseInt(String(parsed.port || '3000'));
+      await startServer(port);
+      break;
+    }
     case 'remember': {
       const store = new MemoryStore();
       await store.save(process.cwd(), {
