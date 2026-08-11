@@ -55,5 +55,5 @@ export async function checkCredentialStatus(service: string, account: string): P
 
 export function maskKey(key: string): string {
   if (key.length <= 8) return key.slice(0, 2) + '**';
-  return key.slice(0, 7) + '...' + key.slice(-4);
+  return key.slice(0, 6) + '...' + key.slice(-4);
 }
