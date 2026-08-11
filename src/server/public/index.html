@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI4SE Harness</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a1a; color: #e0e0e0; font-family: monospace; display: flex; flex-direction: column; height: 100vh; }
+    #status-bar { display: flex; align-items: center; padding: 8px 16px; background: #2d2d2d; border-bottom: 1px solid #444; gap: 16px; font-size: 13px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .status-dot.idle { background: #888; } .status-dot.thinking { background: #4fc3f7; animation: pulse 1s infinite; }
+    .status-dot.guarding { background: #ff9800; } .status-dot.executing { background: #66bb6a; }
+    .status-dot.waiting_approval { background: #ef5350; animation: pulse 0.5s infinite; } .status-dot.observing { background: #ab47bc; }
+    .status-dot.feedback { background: #ff7043; } .status-dot.done { background: #4caf50; }
+    @keyframes pulse { 50% { opacity: 0.4; } }
+    #terminal { flex: 1; padding: 8px; }
+    #input-bar { display: flex; padding: 8px 16px; background: #2d2d2d; border-top: 1px solid #444; }
+    #task-input { flex: 1; background: #1a1a1a; color: #e0e0e0; border: 1px solid #555; padding: 8px; font-family: monospace; border-radius: 4px; }
+    #run-btn { margin-left: 8px; padding: 8px 16px; background: #4fc3f7; color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    #run-btn:hover { background: #29b6f6; }
+    #approval-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
+    #approval-box { background: #2d2d2d; border: 2px solid #ef5350; border-radius: 8px; padding: 24px; max-width: 600px; }
+    #approval-box h3 { color: #ef5350; margin-bottom: 12px; }
+    #approval-box pre { background: #1a1a1a; padding: 12px; border-radius: 4px; overflow-x: auto; margin: 12px 0; }
+    #approval-buttons { display: flex; gap: 12px; margin-top: 12px; }
+    #approval-buttons button { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    #approve-btn { background: #4caf50; color: #000; }
+    #reject-btn { background: #ef5350; color: #fff; }
+  </style>
+</head>
+<body>
+  <div id="status-bar">
+    <span>State: <span class="status-dot idle" id="status-dot"></span></span>
+    <span id="state-label">IDLE</span>
+    <span>Turn: <span id="turn-count">0</span></span>
+    <span>Retry: <span id="retry-count">0/5</span></span>
+  </div>
+  <div id="terminal"></div>
+  <div id="input-bar">
+    <input id="task-input" placeholder="Enter task (e.g., fix the multiply function)..." />
+    <button id="run-btn">Run</button>
+  </div>
+  <div id="approval-overlay">
+    <div id="approval-box">
+      <h3>Dangerous Command Detected</h3>
+      <pre id="dangerous-command"></pre>
+      <p id="dangerous-reason"></p>
+      <div id="approval-buttons">
+        <button id="approve-btn">Approve & Execute</button>
+        <button id="reject-btn">Reject</button>
+      </div>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>

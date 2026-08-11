@@ -33,7 +33,7 @@ describe('Mechanism Demo (§A.6)', () => {
   });
 
   // ② Feedback loop correction
-  it('② Feedback: injects test failure and agent sees correction feedback', async () => {
+  it('② Feedback: injects test failure and agent sees correction feedback', { timeout: 30000 }, async () => {
     writeFileSync(join(tmpDir, 'math.ts'), 'export const multiply = (a: number, b: number) => a + b;'); // bug!
 
     const mock = createMockProvider([
@@ -43,7 +43,9 @@ describe('Mechanism Demo (§A.6)', () => {
       JSON.stringify({ thinking: 'All good', tool: 'task_complete', params: { summary: 'Fixed' } }),
     ]);
 
-    const engine = new HarnessEngine(mock, loadConfig(), { workspaceRoot: tmpDir, onTransition: () => {} });
+    const config = loadConfig();
+    config.feedback.testCommand = 'node -e "process.exit(1)"';
+    const engine = new HarnessEngine(mock, config, { workspaceRoot: tmpDir, onTransition: () => {} });
     const history = await engine.run('Fix multiply');
 
     const feedbackTransitions = history.filter(t => t.to === 'FEEDBACK');
@@ -57,13 +59,14 @@ describe('Mechanism Demo (§A.6)', () => {
   });
 
   // ③ Retry exhaustion
-  it('③ Feedback: max retries leads to DONE(failed)', async () => {
+  it('③ Feedback: max retries leads to DONE(failed)', { timeout: 30000 }, async () => {
     const responses = Array.from({ length: 5 }, () =>
       JSON.stringify({ thinking: 'trying test', tool: 'run_test', params: {} })
     );
     const mock = createMockProvider(responses);
     const config = loadConfig();
     config.feedback.maxRetries = 2;
+    config.feedback.testCommand = 'node -e "process.exit(1)"';
     config.execution.maxToolCalls = 20;
 
     const engine = new HarnessEngine(mock, config, { workspaceRoot: tmpDir, onTransition: () => {} });

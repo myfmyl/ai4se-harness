@@ -52,6 +52,31 @@ export class HarnessEngine {
     return this.history;
   }
 
+  // Resume the run loop from current state (e.g., after HITL approval/rejection)
+  async resumeRun(task: string): Promise<StateTransition[]> {
+    while (this.state !== 'DONE') {
+      if (this.turnCount >= this.config.execution.maxToolCalls) {
+        this.finalize(false, 'Max tool calls exceeded');
+        break;
+      }
+
+      switch (this.state) {
+        case 'THINKING': await this.doThink(task); break;
+        case 'GUARDING': await this.doGuard(); break;
+        case 'EXECUTING': await this.doExecute(); break;
+        case 'WAITING_APPROVAL': break;
+        case 'OBSERVING': await this.doObserve(); break;
+        case 'FEEDBACK': await this.doFeedback(); break;
+      }
+
+      if (this.state === 'WAITING_APPROVAL') break;
+
+      this.turnCount++;
+    }
+
+    return this.history;
+  }
+
   async doThink(task: string): Promise<void> {
     const reversed = [...this.history].reverse();
     const lastFeedbackTransition = reversed.find(t => t.metadata?.feedbackResult);
