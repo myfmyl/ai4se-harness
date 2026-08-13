@@ -4,3 +4,4 @@ dist/
 .harness/credentials/
 .harness/logs/
 *.enc
+.claude/
