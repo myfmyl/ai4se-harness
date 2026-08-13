@@ -97,11 +97,19 @@ Every harness mechanism is a deterministic TypeScript function:
 - **Feedback**: `parseTestOutput(json)` → `FeedbackItem[]` — pure parser
 - **State Machine**: `engine.run(task)` with `createMockProvider([...])` → deterministic state transitions
 
-60 tests, 12 test files, all pass without network or API key.
+62 tests, 13 test files, all pass without network or API key.
 
 ## CI/CD
 
-GitHub Actions runs `npm test` + `npm run build` on every push. Docker image built after tests pass.
+GitHub Actions runs `npm test` + `npm run build` on every push. Docker image built after tests pass. GitLab CI (`.gitlab-ci.yml`) mirrors the same `unit-test` job.
+
+## Known Limitations
+
+- **Platform**: credential storage uses macOS Keychain; Linux and Docker fall back to an AES-256-GCM encrypted file (requires a user-defined master password in production).
+- **Runtime**: Node.js >= 20.
+- **Docker**: containers cannot access the host macOS Keychain — run `harness setup` inside the container to store a key as an encrypted file.
+- **Web UI**: xterm.js / Socket.IO load from a CDN (`cdn.jsdelivr.net`), so the browser needs internet access (a proxy may be required in mainland China).
+- **Registry**: the published image lives at `ghcr.io/myfmyl/ai4se-harness` (not Docker Hub) due to the build environment's network constraints.
 
 ## License
 

@@ -1,0 +1,23 @@
+# GitLab CI — unit-test is the required job (通用要求 §五 项6)
+image: node:20
+
+stages:
+  - test
+  - build
+
+unit-test:
+  stage: test
+  script:
+    - npm ci
+    - npm test
+    - npm run build
+
+build-docker:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  needs:
+    - unit-test
+  script:
+    - docker build -t ai4se-harness .
